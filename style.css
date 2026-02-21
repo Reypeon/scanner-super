@@ -1,122 +1,195 @@
-body {
-    margin: 0;
-    background: #121212;
-    color: white;
-    font-family: sans-serif;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+:root {
+  --primary: #4ade80;
+  --bg: #121212;
+  --surface: #1e1e1e;
+  --text: #ffffff;
+  --danger: #ff5555;
 }
 
-/* Contenedor de cámara */
-.camera-view {
-    position: relative;
-    height: 35vh;
-    overflow: hidden;
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: scroll ;
+  overflow-x: hidden;
+}
+
+/* Contenedor de la Cámara */
+.scanner-container {
+  position: relative;
+  width: 100%;
+  height: 40vh;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 video {
+  width: 100%;
+  min-height: 15rem;
+  object-fit: cover;
+  margin: 0.5rem;
+    border: solid 3px var(--primary);
+    border-radius: 15px;
+
+}
+
+/* El "visor" que ayuda a centrar el precio */
+.overlay {
+  position: absolute;
+  border: 2px solid var(--primary);
+  width: 200px;
+  height: 80px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  border-radius: 8px;
+}
+
+/* Panel de Control */
+.controls {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  margin-top: -20px;
+  z-index: 10;
+  flex-grow: 1;
+}
+
+button#btn-capture {
+  background: var(--primary);
+  color: #000;
+  border: none;
+  padding: 18px;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+button#btn-capture:active {
+  transform: scale(0.95);
+  filter: brightness(0.9);
+}
+
+/* Lista de Carrito */
+#list {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border-bottom: 1px solid #333;
+}
+
+.item span {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.qty-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.qty-controls button {
+  background: #333;
+  color: white;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+}
+
+/* Footer con Total */
+.total-section {
+  padding: 20px;
+  background: var(--surface);
+  border-top: 2px solid var(--primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#total {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary);
+}.flash-effect {
+    animation: flash 0.3s ease-out;
+}
+
+@keyframes flash {
+    0% { background-color: white; }
+    100% { background-color: transparent; }
+}
+
+
+.item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #2a2a2a;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    gap: 15px;
+}
+
+.product-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #444;
+    flex-shrink: 0;
+}
+
+.product-img img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.scan-overlay {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 180px; height: 60px;
-    border: 2px solid #4ade80;
-    border-radius: 8px;
-    box-shadow: 0 0 0 999px rgba(0,0,0,0.4);
-    pointer-events: none;
+.placeholder {
+    width: 100%;
+    height: 100%;
+    border: 2px dashed #666;
 }
 
-.scan-overlay::after {
-    content: "TOCA PARA ESCANEAR";
-    position: absolute;
-    bottom: -25px; width: 100%;
-    text-align: center; font-size: 10px; color: #4ade80;
-}
-
-/* Animación de escaneo */
-.scanning {
-    border-color: #ff00ff;
-    animation: pulse 0.5s infinite;
-}
-
-@keyframes pulse {
-    0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
-}
-
-/* Lista de productos */
-#list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-}
-
-.item {
+.item-info {
+    flex-grow: 1;
     display: flex;
-    background: #1e1e1e;
-    margin-bottom: 12px;
-    padding: 10px;
-    border-radius: 12px;
+    justify-content: space-between;
     align-items: center;
 }
 
-.product-photo-sector {
-    position: relative;
-    margin-right: 15px;
+.qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.img-box {
-    width: 70px; height: 70px;
-    background: #333;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.img-box img { width: 100%; height: 100%; object-fit: cover; }
-
-.btn-snap {
-    position: absolute;
-    bottom: -5px; right: -5px;
+.qty-controls button {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: none;
     background: #4ade80;
-    border: none; border-radius: 50%;
-    width: 30px; height: 30px;
-    cursor: pointer; font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
 }
-
-.item-details {
-    flex: 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.price { font-size: 1.4rem; font-weight: bold; }
-
-.qty-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.qty-wrapper button {
-    background: #444; color: white; border: none;
-    width: 35px; height: 35px; border-radius: 8px;
-    font-size: 1.2rem;
-}
-
-/* Footer */
-.footer {
-    padding: 20px;
-    background: #1e1e1e;
-    border-top: 1px solid #333;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-#total { font-size: 2rem; color: #4ade80; font-weight: bold; }
