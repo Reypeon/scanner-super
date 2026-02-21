@@ -1,34 +1,17 @@
 export class Cart {
     constructor(updateCallback) {
-        this.updateCallback = updateCallback;
-        // Cargar del localStorage al iniciar
+        // Cargar datos guardados al iniciar
         const saved = localStorage.getItem('scanner_cart');
         this.items = saved ? JSON.parse(saved) : [];
+        this.updateCallback = updateCallback;
         this.calculate();
     }
 
     addPrice(price) {
         const value = parseFloat(price);
         if (isNaN(value)) return;
-
-        const newItem = { 
-            id: Date.now(), 
-            price: value, 
-            qty: 1, 
-            image: null // Aquí guardaremos la foto después
-        };
-        
-        this.items.push(newItem);
-        this.saveAndRender();
-        return newItem.id; // Devolvemos el ID para saber a cuál ponerle la foto
-    }
-
-    updateImage(id, imageData) {
-        const item = this.items.find(i => i.id === id);
-        if (item) {
-            item.image = imageData;
-            this.saveAndRender();
-        }
+        this.items.push({ id: Date.now(), price: value, qty: 1, image: null });
+        this.save();
     }
 
     updateQty(id, change) {
@@ -37,15 +20,22 @@ export class Cart {
             item.qty += change;
             if (item.qty <= 0) this.items = this.items.filter(i => i.id !== id);
         }
-        this.saveAndRender();
+        this.save();
+    }
+
+    // Nueva función para guardar la foto del producto específico
+    setImage(id, imageData) {
+        const item = this.items.find(i => i.id === id);
+        if (item) item.image = imageData;
+        this.save();
     }
 
     clear() {
         this.items = [];
-        this.saveAndRender();
+        this.save();
     }
 
-    saveAndRender() {
+    save() {
         localStorage.setItem('scanner_cart', JSON.stringify(this.items));
         this.calculate();
     }
