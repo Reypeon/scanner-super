@@ -7,28 +7,55 @@ const btnCapture = document.querySelector('#btn-capture');
 const totalEl = document.querySelector('#total');
 const listEl = document.querySelector('#list');
 
-// Inicializar carrito con función de dibujado
+// Función para capturar una miniatura del video
+const takeSnapshot = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 100; // Miniatura pequeña para no saturar el storage
+    canvas.height = 100;
+    const ctx = canvas.getContext('2d');
+    // Recortamos el centro del video para el cuadradito
+    ctx.drawImage(video, (video.videoWidth/2)-50, (video.videoHeight/2)-50, 100, 100, 0, 0, 100, 100);
+    return canvas.toDataURL('image/jpeg', 0.7);
+};
+
 const myCart = new Cart((items, total) => {
     totalEl.innerText = `$${total.toFixed(2)}`;
     listEl.innerHTML = items.map(item => `
         <div class="item">
-            <span>$${item.price} (x${item.qty})</span>
-            <button onclick="window.changeQty(${item.id}, 1)">+</button>
-            <button onclick="window.changeQty(${item.id}, -1)">-</button>
+            <div class="product-img">
+                ${item.image ? `<img src="${item.image}" />` : `<div class="placeholder"></div>`}
+            </div>
+            <div class="item-info">
+                <span>$${item.price.toFixed(2)}</span>
+                <div class="qty-controls">
+                    <button onclick="window.changeQty(${item.id}, -1)">-</button>
+                    <span>${item.qty}</span>
+                    <button onclick="window.changeQty(${item.id}, 1)">+</button>
+                </div>
+            </div>
         </div>
-    `).join('');
+    `).reverse().join(''); // Reverse para que el último scaneado salga arriba
 });
 
-// Funciones globales para los botones
 window.changeQty = (id, delta) => myCart.updateQty(id, delta);
 
-// Botón de captura
 btnCapture.addEventListener('click', async () => {
-    btnCapture.innerText = "Leyendo...";
+    btnCapture.innerText = "LEYENDO...";
+    btnCapture.disabled = true;
+
     const price = await processImage(video);
-    if (price) myCart.addPrice(price);
-    else alert("No se detectó el precio");
+    
+    if (price) {
+        const newId = myCart.addPrice(price);
+        // Capturamos la foto inmediatamente después de detectar el precio
+        const photo = takeSnapshot();
+        myCart.updateImage(newId, photo);
+    } else {
+        alert("No se detectó el precio. Intenta acercarte más.");
+    }
+
     btnCapture.innerText = "CAPTURAR PRECIO";
+    btnCapture.disabled = false;
 });
 
 initCamera(video);
