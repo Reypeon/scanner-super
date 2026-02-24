@@ -6,7 +6,6 @@ export default function Scanner({ onDetected }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Iniciar cámara
   useEffect(() => {
     const startCamera = async () => {
       try {
@@ -14,9 +13,7 @@ export default function Scanner({ onDetected }) {
           video: { facingMode: "environment" },
         });
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
+        videoRef.current.srcObject = stream;
       } catch (err) {
         setError("No se pudo acceder a la cámara");
       }
@@ -38,20 +35,34 @@ export default function Scanner({ onDetected }) {
     try {
       const video = videoRef.current;
       const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
 
-      const context = canvas.getContext("2d");
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
 
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      // Región del rectángulo (centrado)
+      const rectWidth = vw * 0.6;
+      const rectHeight = vh * 0.2;
 
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const x = (vw - rectWidth) / 2;
+      const y = (vh - rectHeight) / 2;
+
+      canvas.width = rectWidth;
+      canvas.height = rectHeight;
+
+      // Recorte directo del video
+      ctx.drawImage(
+        video,
+        x, y, rectWidth, rectHeight,
+        0, 0, rectWidth, rectHeight
+      );
 
       const blob = await new Promise(resolve =>
         canvas.toBlob(resolve, "image/jpeg", 0.9)
       );
 
       const formData = new FormData();
-      formData.append("image", blob, "capture.jpg");
+      formData.append("image", blob, "price.jpg");
 
       const response = await fetch(
         "https://breezy-loise-reypeon-48ecd9ba.koyeb.app/api/scan",
@@ -77,14 +88,29 @@ export default function Scanner({ onDetected }) {
   };
 
   return (
-    <div>
+    <div style={{ position: "relative", maxWidth: "400px" }}>
+      
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       <video
         ref={videoRef}
         autoPlay
         playsInline
-        style={{ width: "100%", maxWidth: "400px" }}
+        style={{ width: "100%" }}
+      />
+
+      {/* Rectángulo guía */}
+      <div
+        style={{
+          position: "absolute",
+          top: "40%",
+          left: "20%",
+          width: "60%",
+          height: "20%",
+          border: "3px solid red",
+          boxSizing: "border-box",
+          pointerEvents: "none",
+        }}
       />
 
       <canvas ref={canvasRef} style={{ display: "none" }} />
