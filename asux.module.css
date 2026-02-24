@@ -32,6 +32,7 @@ body {
 video {
   width: 100%;
   min-height: 15rem;
+  height: 50vh;
   object-fit: cover;
   margin: 0.5rem;
     border: solid 3px var(--primary);
@@ -39,30 +40,7 @@ video {
 
 }
 
-/* El "visor" que ayuda a centrar el precio */
-.overlay {
-  position: absolute;
-  border: 2px solid var(--primary);
-  width: 200px;
-  height: 80px;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
-  pointer-events: none;
-  border-radius: 8px;
-}
-
-/* Panel de Control */
-.controls {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  background: var(--surface);
-  border-radius: 20px 20px 0 0;
-  margin-top: -20px;
-  z-index: 10;
-  flex-grow: 1;
-}
-
+/* boton de capturar price */
 button#btn-capture {
   background: var(--primary);
   color: #000;
@@ -81,24 +59,13 @@ button#btn-capture:active {
   filter: brightness(0.9);
 }
 
+
+
 /* Lista de Carrito */
 #list {
   flex-grow: 1;
   overflow-y: auto;
   margin-top: 10px;
-}
-
-.item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  border-bottom: 1px solid #333;
-}
-
-.item span {
-  font-size: 1.1rem;
-  font-weight: 500;
 }
 
 .qty-controls {
@@ -116,16 +83,6 @@ button#btn-capture:active {
   font-size: 1.2rem;
 }
 
-/* Footer con Total */
-.total-section {
-  padding: 20px;
-  background: var(--surface);
-  border-top: 2px solid var(--primary);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 #total {
   font-size: 2rem;
   font-weight: bold;
@@ -140,6 +97,7 @@ button#btn-capture:active {
 }
 
 
+/* box del los scanner  */
 .item {
     display: flex;
     align-items: center;
@@ -150,13 +108,23 @@ button#btn-capture:active {
     gap: 15px;
 }
 
+.item span {
+  font-size: 2.5vh;
+  font-weight: 500;
+}
+
+
+/* Foto del producto */
 .product-img {
-    width: 60px;
-    height: 60px;
+    width: 150px;
+    height: 150px;
     border-radius: 8px;
+    margin: 0 10px;
     overflow: hidden;
-    background: #444;
+    background: #ffffff;
     flex-shrink: 0;
+      position: relative;
+    display: inline-block;
 }
 
 .product-img img {
@@ -171,6 +139,37 @@ button#btn-capture:active {
     border: 2px dashed #666;
 }
 
+/* El botón circular verde que aparece sobre la foto */
+.btn-snap {
+    position: absolute;
+    bottom: 5px;
+    right: 15px; /* Ajustado para que quede sobre tu margen de 10px */
+    background: var(--primary);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 3rem;
+    height: 3rem;
+    font-size: 2rem;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.btn-snap:active {
+    transform: scale(0.9);
+}
+
+
+
+
+
+
+
+/* Numero del scaner "price" */
 .item-info {
     flex-grow: 1;
     display: flex;
@@ -178,29 +177,36 @@ button#btn-capture:active {
     align-items: center;
 }
 
+/* Botones de cantidad */
 .qty-controls {
     display: flex;
     align-items: center;
-    gap: 10px;
 }
 
 .qty-controls button {
-    width: 30px;
-    height: 30px;
+    width: 4vh;
+    height: 4vh;
     border-radius: 50%;
     border: none;
     background: #4ade80;
     font-weight: bold;
+    font-size: 3vh;
     cursor: pointer;
+    margin: 0 2rem;
 }
 
-.scanner_cart {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: var(--surface);
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    z-index: 100;
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

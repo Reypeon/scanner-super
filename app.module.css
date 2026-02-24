@@ -1,0 +1,95 @@
+.app {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 20px;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.app h1 {
+  font-size: 22px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* ================= CART ================= */
+
+.cart {
+  width: 100%;
+  max-width: 420px;
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cart h2 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #22c55e;
+}
+
+.item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #0f172a;
+  padding: 10px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.productImg {
+  width: 60px;
+  height: 60px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #334155;
+  flex-shrink: 0;
+}
+
+.productImg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  background: #334155;
+}
+
+.itemInfo {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.qtyControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qtyControls button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: #22c55e;
+  color: #0f172a;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.qtyControls button:hover {
+  transform: scale(1.1);
+}

@@ -1,0 +1,1 @@
+HTTPS obligatorio: Recuerda que getUserMedia de scanner.js no funcionará en producción si no tienes un certificado SSL válido.
