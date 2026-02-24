@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import styles from "./scanner.module.css";
 
 const PriceScanner = ({ onDetected }) => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const processingRef = useRef(false);
+  const intervalRef = useRef(null);
 
   const [isReady, setIsReady] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -14,11 +15,16 @@ const PriceScanner = ({ onDetected }) => {
   // =========================
   // INIT CAMERA
   // =========================
-  const initCamera = async () => {
+  const initCamera = useCallback(async () => {
     try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        alert("El navegador no soporta acceso a cámara.");
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: "environment",
+          facingMode: { ideal: "environment" },
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
@@ -32,14 +38,24 @@ const PriceScanner = ({ onDetected }) => {
       }
     } catch (err) {
       console.error("Error acceso cámara:", err);
-      alert("No se pudo acceder a la cámara.");
+
+      switch (err.name) {
+        case "NotAllowedError":
+          alert("Permiso de cámara denegado.");
+          break;
+        case "NotFoundError":
+          alert("No se encontró cámara disponible.");
+          break;
+        default:
+          alert("Error al iniciar la cámara.");
+      }
     }
-  };
+  }, []);
 
   // =========================
-  // ENVIAR FRAME AL BACKEND
+  // PROCESAR FRAME
   // =========================
-  const processImage = async () => {
+  const processImage = useCallback(async () => {
     if (!videoRef.current || processingRef.current) return;
 
     processingRef.current = true;
@@ -58,6 +74,8 @@ const PriceScanner = ({ onDetected }) => {
         canvas.toBlob(resolve, "image/jpeg", 0.8)
       );
 
+      if (!blob) return;
+
       const formData = new FormData();
       formData.append("image", blob);
 
@@ -69,6 +87,8 @@ const PriceScanner = ({ onDetected }) => {
         }
       );
 
+      if (!response.ok) throw new Error("Error backend");
+
       const data = await response.json();
 
       if (data.price) {
@@ -78,11 +98,10 @@ const PriceScanner = ({ onDetected }) => {
 
         if (!isNaN(numeric)) {
           setLastPrice(numeric);
-          onDetected(numeric);
+          onDetected?.(numeric);
 
-          // Flash visual
           setShowFlash(true);
-          setTimeout(() => setShowFlash(false), 300);
+          setTimeout(() => setShowFlash(false), 250);
         }
       }
     } catch (err) {
@@ -90,8 +109,11 @@ const PriceScanner = ({ onDetected }) => {
     } finally {
       processingRef.current = false;
     }
-  };
+  }, [onDetected]);
 
+  // =========================
+  // INIT
+  // =========================
   useEffect(() => {
     initCamera();
 
@@ -101,16 +123,22 @@ const PriceScanner = ({ onDetected }) => {
           .getTracks()
           .forEach((t) => t.stop());
       }
+      clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [initCamera]);
 
+  // =========================
+  // CONTROL SCAN LOOP
+  // =========================
   useEffect(() => {
-    let interval;
     if (scanning) {
-      interval = setInterval(processImage, 2000);
+      intervalRef.current = setInterval(processImage, 2000);
+    } else {
+      clearInterval(intervalRef.current);
     }
-    return () => clearInterval(interval);
-  }, [scanning]);
+
+    return () => clearInterval(intervalRef.current);
+  }, [scanning, processImage]);
 
   return (
     <div className={styles.container}>
@@ -119,6 +147,7 @@ const PriceScanner = ({ onDetected }) => {
           ref={videoRef}
           autoPlay
           playsInline
+          muted
           className={styles.video}
         />
 
@@ -137,16 +166,15 @@ const PriceScanner = ({ onDetected }) => {
             scanning ? styles.active : ""
           }`}
           disabled={!isReady}
-          onClick={() => setScanning(!scanning)}
+          onClick={() => setScanning((prev) => !prev)}
         >
           {scanning ? "PAUSAR SCANNER" : "INICIAR SCANNER"}
         </button>
 
-        {lastPrice && (
+        {lastPrice !== null && (
           <div className={styles.result}>
             Último detectado:
             <strong> ${lastPrice.toFixed(2)}</strong>
-            <h1>{lastPrice}</h1>
           </div>
         )}
       </div>
