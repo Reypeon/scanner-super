@@ -127,7 +127,7 @@
 // }
 
 import React, { useRef, useState, useEffect } from 'react';
-import styles from './Scanner.module.css';
+import styles from './scanner.module.css';
 
 const Scanner = () => {
   const videoRef = useRef(null);
