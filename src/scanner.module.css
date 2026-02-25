@@ -1,80 +1,122 @@
 .container {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  font-family: sans-serif;
-  gap: 20px;
-  padding: 20px;
+  gap: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .videoWrapper {
   position: relative;
   width: 100%;
-  max-width: 500px;
-  border-radius: 12px;
+  aspect-ratio: 3 / 4;
+  background: #000;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .video {
   width: 100%;
-  display: block;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* El cuadro que guía al usuario */
+/* Overlay oscuro */
 .overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.4); /* Oscurece el resto */
+  inset: 0;
+  pointer-events: none;
 }
 
+/* Rectángulo guía */
 .guideBox {
-  width: 300px; /* Debe coincidir con cropWidth */
-  height: 150px; /* Debe coincidir con cropHeight */
-  border: 3px solid #00ff00;
+  position: absolute;
+  top: 40%;
+  left: 20%;
+  width: 60%;
+  height: 20%;
+  border: 3px solid #00ff88;
   border-radius: 8px;
-  background: transparent;
-  box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.4); /* Crea el efecto de hueco */
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.7);
+}
+
+/* Efecto oscurecer exterior */
+.overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  mask: 
+    linear-gradient(#000 0 0) center / 60% 20% no-repeat,
+    linear-gradient(#000 0 0);
+  -webkit-mask:
+    linear-gradient(#000 0 0) center / 60% 20% no-repeat,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: destination-out;
 }
 
 .controls {
-  width: 100%;
-  max-width: 500px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
 }
 
 .scanBtn {
-  padding: 15px;
-  background-color: #007bff;
-  color: white;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 12px;
   border: none;
-  border-radius: 8px;
-  font-weight: bold;
   cursor: pointer;
+  background: linear-gradient(135deg, #00c853, #00e676);
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.scanBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 200, 83, 0.4);
 }
 
 .scanBtn:disabled {
-  background-color: #ccc;
+  background: #888;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+}
+
+.inputGroup label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
 }
 
 .input {
   padding: 12px;
-  font-size: 1.2rem;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  text-align: center;
+  font-size: 16px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.input:focus {
+  border-color: #00c853;
+}
+
+.error {
+  color: #d32f2f;
+  font-weight: 500;
+  font-size: 14px;
 }

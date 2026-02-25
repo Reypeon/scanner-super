@@ -10,7 +10,7 @@ function App() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div style={{ padding: "20px", backgroundColor: "#333",  }}>
       <h1>Scanner</h1>
 
       <Scanner onDetected={handleDetected} />

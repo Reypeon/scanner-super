@@ -1,224 +1,164 @@
-// import { useEffect, useRef, useState } from "react";
-
-// export default function Scanner({ onDetected }) {
-//   const videoRef = useRef(null);
-//   const canvasRef = useRef(null);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState(null);
-
-//   useEffect(() => {
-//     const startCamera = async () => {
-//       try {
-//         const stream = await navigator.mediaDevices.getUserMedia({
-//           video: { facingMode: "environment" },
-//         });
-
-//         videoRef.current.srcObject = stream;
-//       } catch (err) {
-//         setError("No se pudo acceder a la cámara");
-//       }
-//     };
-
-//     startCamera();
-
-//     return () => {
-//       if (videoRef.current?.srcObject) {
-//         videoRef.current.srcObject.getTracks().forEach(track => track.stop());
-//       }
-//     };
-//   }, []);
-
-//   const captureAndSend = async () => {
-//     setLoading(true);
-//     setError(null);
-
-//     try {
-//       const video = videoRef.current;
-//       const canvas = canvasRef.current;
-//       const ctx = canvas.getContext("2d");
-
-//       const vw = video.videoWidth;
-//       const vh = video.videoHeight;
-
-//       // Región del rectángulo (centrado)
-//       const rectWidth = vw * 0.6;
-//       const rectHeight = vh * 0.2;
-
-//       const x = (vw - rectWidth) / 2;
-//       const y = (vh - rectHeight) / 2;
-
-//       canvas.width = rectWidth;
-//       canvas.height = rectHeight;
-
-//       // Recorte directo del video
-//       ctx.drawImage(
-//         video,
-//         x, y, rectWidth, rectHeight,
-//         0, 0, rectWidth, rectHeight
-//       );
-
-//       const blob = await new Promise(resolve =>
-//         canvas.toBlob(resolve, "image/jpeg", 0.9)
-//       );
-
-//       const formData = new FormData();
-//       formData.append("image", blob, "price.jpg");
-
-//       const response = await fetch(
-//         "https://breezy-loise-reypeon-48ecd9ba.koyeb.app/api/scan",
-//         {
-//           method: "POST",
-//           body: formData,
-//         }
-//       );
-
-//       const data = await response.json();
-
-//       if (data.status === "success") {
-//         onDetected(data.price);
-//       } else {
-//         setError("No se pudo detectar precio");
-//       }
-
-//     } catch (err) {
-//       setError("Error enviando imagen");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div style={{ position: "relative", maxWidth: "400px" }}>
-      
-//       {error && <p style={{ color: "red" }}>{error}</p>}
-
-//       <video
-//         ref={videoRef}
-//         autoPlay
-//         playsInline
-//         style={{ width: "100%" }}
-//       />
-
-//       {/* Rectángulo guía */}
-//       <div
-//         style={{
-//           position: "absolute",
-//           top: "40%",
-//           left: "20%",
-//           width: "60%",
-//           height: "20%",
-//           border: "3px solid red",
-//           boxSizing: "border-box",
-//           pointerEvents: "none",
-//         }}
-//       />
-
-//       <canvas ref={canvasRef} style={{ display: "none" }} />
-
-//       <button
-//         onClick={captureAndSend}
-//         disabled={loading}
-//         style={{ marginTop: "10px", padding: "10px 20px" }}
-//       >
-//         {loading ? "Detectando..." : "Detectar"}
-//       </button>
-//     </div>
-//   );
-// }
-
-import React, { useRef, useState, useEffect } from 'react';
-import styles from './scanner.module.css';
+import React, { useRef, useState, useEffect } from "react";
+import styles from "./scanner.module.css";
 
 const Scanner = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const [scannedNumber, setScannedNumber] = useState('');
+  const streamRef = useRef(null);
+
+  const [scannedNumber, setScannedNumber] = useState("");
   const [isScanning, setIsScanning] = useState(false);
+  const [error, setError] = useState(null);
 
   // Iniciar cámara
   useEffect(() => {
-    async function startCamera() {
+    const startCamera = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'environment' } 
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
         });
-        if (videoRef.current) videoRef.current.srcObject = stream;
+
+        streamRef.current = stream;
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+
+          // Esperar a que el video esté listo
+          await new Promise((resolve) => {
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current.play();
+              resolve();
+            };
+          });
+        }
       } catch (err) {
-        console.error("Error accediendo a la cámara:", err);
+        console.error(err);
+        setError("No se pudo acceder a la cámara");
       }
-    }
+    };
+
     startCamera();
+
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop());
+      }
+    };
   }, []);
 
   const captureAndSend = async () => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+
+    if (!video || !canvas || video.readyState !== 4) {
+      setError("La cámara no está lista");
+      return;
+    }
 
     setIsScanning(true);
+    setError(null);
 
-    // Configurar dimensiones del recorte (ejemplo: centro de la imagen)
-    const ctx = canvas.getContext('2d');
-    const cropWidth = 300; 
-    const cropHeight = 150;
-    const startX = (video.videoWidth - cropWidth) / 2;
-    const startY = (video.videoHeight - cropHeight) / 2;
+    try {
+      const ctx = canvas.getContext("2d");
 
-    canvas.width = cropWidth;
-    canvas.height = cropHeight;
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
 
-    // Dibujar solo la parte "recortada" en el canvas
-    ctx.drawImage(
-      video, 
-      startX, startY, cropWidth, cropHeight, // Fuente (recorte)
-      0, 0, cropWidth, cropHeight           // Destino (canvas)
-    );
+      // 🔥 MISMAS PROPORCIONES QUE EL RECTÁNGULO VISUAL
+      const cropWidth = vw * 0.6;
+      const cropHeight = vh * 0.2;
 
-    // Convertir a Blob y enviar
-    canvas.toBlob(async (blob) => {
+      const startX = (vw - cropWidth) / 2;
+      const startY = (vh - cropHeight) / 2;
+
+      canvas.width = cropWidth;
+      canvas.height = cropHeight;
+
+      ctx.drawImage(
+        video,
+        startX,
+        startY,
+        cropWidth,
+        cropHeight,
+        0,
+        0,
+        cropWidth,
+        cropHeight
+      );
+
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/jpeg", 0.92)
+      );
+
+      if (!blob) throw new Error("No se pudo generar la imagen");
+
       const formData = new FormData();
-      formData.append('image', blob, 'scan.jpg');
+      formData.append("image", blob, "scan.jpg");
 
-      try {
-        const response = await fetch('https://breezy-loise-reypeon-48ecd9ba.koyeb.app/api/scan', {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await response.json();
-        // Asumiendo que el server devuelve { number: "123" }
-        setScannedNumber(data.price);
-      } catch (error) {
-        console.error("Error al procesar imagen:", error);
-      } finally {
-        setIsScanning(false);
+      const response = await fetch(
+        "https://breezy-loise-reypeon-48ecd9ba.koyeb.app/api/scan",
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error en el servidor");
       }
-    }, 'image/jpeg', 0.9);
+
+      const data = await response.json();
+
+      if (data.status === "success" && data.price) {
+        setScannedNumber(data.price);
+      } else {
+        setError(data.message || "No se detectó precio");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Error procesando la imagen");
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   return (
     <div className={styles.container}>
+      {error && <p className={styles.error}>{error}</p>}
+
       <div className={styles.videoWrapper}>
-        <video ref={videoRef} autoPlay playsInline className={styles.video} />
-        {/* Guía visual para el usuario */}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className={styles.video}
+        />
+
+        {/* Rectángulo guía */}
         <div className={styles.overlay}>
-          <div className={styles.guideBox}></div>
+          <div className={styles.guideBox} />
         </div>
       </div>
 
       <div className={styles.controls}>
-        <button 
-          onClick={captureAndSend} 
-          className={styles.scanBtn}
+        <button
+          onClick={captureAndSend}
           disabled={isScanning}
+          className={styles.scanBtn}
         >
-          {isScanning ? 'Escaneando...' : 'Escanear Número'}
+          {isScanning ? "Escaneando..." : "Escanear Precio"}
         </button>
 
         <div className={styles.inputGroup}>
-          <label>Número detectado:</label>
-          <input 
-            type="text" 
-            value={scannedNumber} 
+          <label>Precio detectado:</label>
+          <input
+            type="text"
+            value={scannedNumber}
             onChange={(e) => setScannedNumber(e.target.value)}
             placeholder="Esperando escaneo..."
             className={styles.input}
@@ -226,8 +166,7 @@ const Scanner = () => {
         </div>
       </div>
 
-      {/* Canvas oculto para procesamiento */}
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <canvas ref={canvasRef} style={{ display: "none" }} />
     </div>
   );
 };
